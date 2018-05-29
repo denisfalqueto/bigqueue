@@ -9,9 +9,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
-
 /**
  * A big, fast and persistent queue implementation.
  *
@@ -50,8 +47,6 @@ public class BigQueue implements Closeable {
 
     // lock for dequeueFuture access
     private final Object futureLock = new Object();
-    private SettableFuture<byte[]> dequeueFuture;
-    private SettableFuture<byte[]> peekFuture;
 
     /**
      * A big, fast and persistent queue implementation, use default back data
@@ -112,8 +107,6 @@ public class BigQueue implements Closeable {
 
     public void enqueue(final byte[] data) {
         innerArray.append(data);
-
-        this.completeFutures();
     }
 
     /**
@@ -193,23 +186,6 @@ public class BigQueue implements Closeable {
     }
 
     /**
-     * Retrieves a Future which will complete if new Items where enqued.
-     *
-     * Use this method to retrieve a future where to register as Listener
-     * instead of repeatedly polling the queues state. On complete this future
-     * contains the result of the dequeue operation. Hence the item was
-     * automatically removed from the queue.
-     *
-     * @return a ListenableFuture which completes with the first entry if items
-     *         are ready to be dequeued.
-     */
-
-    public ListenableFuture<byte[]> dequeueAsync() {
-        this.initializeDequeueFutureIfNecessary();
-        return dequeueFuture;
-    }
-
-    /**
      * Removes all items of a queue, this will empty the queue and delete all
      * back data files.
      */
@@ -270,20 +246,6 @@ public class BigQueue implements Closeable {
         return dataList;
     }
 
-    /**
-     * Retrieves the item at the front of a queue asynchronously. On complete
-     * the value set in this future is the result of the peek operation. Hence
-     * the item remains at the front of the list.
-     *
-     * @return a future containing the first item if available. You may register
-     *         as listener at this future to be informed if a new item arrives.
-     */
-
-    public ListenableFuture<byte[]> peekAsync() {
-        this.initializePeekFutureIfNecessary();
-        return peekFuture;
-    }
-
     public void applyForEach(final ItemIterator iterator) {
         try {
             queueFrontWriteLock.lock();
@@ -304,19 +266,6 @@ public class BigQueue implements Closeable {
     public void close() throws IOException {
         if (queueFrontIndexPageFactory != null) {
             queueFrontIndexPageFactory.releaseCachedPages();
-        }
-
-        synchronized (futureLock) {
-            /*
-             * Cancel the future but don't interrupt running tasks because they
-             * might perform further work not refering to the queue
-             */
-            if (peekFuture != null) {
-                peekFuture.cancel(false);
-            }
-            if (dequeueFuture != null) {
-                dequeueFuture.cancel(false);
-            }
         }
 
         innerArray.close();
@@ -381,48 +330,6 @@ public class BigQueue implements Closeable {
             return qRear - qFront;
         } else {
             return Long.MAX_VALUE - qFront + 1 + qRear;
-        }
-    }
-
-    /**
-     * Completes the dequeue future
-     */
-    private void completeFutures() {
-        synchronized (futureLock) {
-            if (peekFuture != null && !peekFuture.isDone()) {
-                peekFuture.set(this.peek());
-            }
-            if (dequeueFuture != null && !dequeueFuture.isDone()) {
-                dequeueFuture.set(this.dequeue());
-            }
-        }
-    }
-
-    /**
-     * Initializes the futures if it's null at the moment
-     */
-    private void initializeDequeueFutureIfNecessary() {
-        synchronized (futureLock) {
-            if (dequeueFuture == null || dequeueFuture.isDone()) {
-                dequeueFuture = SettableFuture.create();
-            }
-            if (!this.isEmpty()) {
-                dequeueFuture.set(this.dequeue());
-            }
-        }
-    }
-
-    /**
-     * Initializes the futures if it's null at the moment
-     */
-    private void initializePeekFutureIfNecessary() {
-        synchronized (futureLock) {
-            if (peekFuture == null || peekFuture.isDone()) {
-                peekFuture = SettableFuture.create();
-            }
-            if (!this.isEmpty()) {
-                peekFuture.set(this.peek());
-            }
         }
     }
 

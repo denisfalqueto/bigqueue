@@ -1,17 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.bluejeans</groupId>
+	<groupId>br.jus.trt3.bibliotecas</groupId>
 	<artifactId>bigqueue</artifactId>
-	<version>1.7.0.6</version>
+	<version>1.0.0</version>
 	<name>bigqueue</name>
-	<url>https://github.com/bluejeansnet/bigqueue</url>
+	<url>https://github.com/denisfalqueto/bigqueue.git</url>
 	<description>Light, fast and persistent queue.</description>
 	<scm>
-		<connection>scm:git:git://github.com/bluejeansnet/bigqueue.git</connection>
-		<developerConnection>scm:git:git@github.com:bluejeansnet/bigqueue.git</developerConnection>
-		<url>https://github.com/bluejeansnet/bigqueue</url>
-		<tag>1.7.0.0</tag>
+		<connection>scm:git:git://github.com/denisfalqueto/bigqueue.git</connection>
+		<developerConnection>scm:git:git@github.com:denisfalqueto/bigqueue.git</developerConnection>
+		<url>https://github.com:denisfalqueto/bigqueue.git</url>
+		<tag>1.0.0</tag>
 	</scm>
 	<licenses>
 		<license>
@@ -68,13 +68,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.13</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -164,20 +157,6 @@
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
